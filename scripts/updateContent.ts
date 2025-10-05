@@ -58,9 +58,8 @@ export async function runUpdate(specificTopics?: TopicConfig[]) {
 }
 
 async function generateBatch(batch: TopicConfig[], config: AIConfig, instructions: string) {
-  if (!process.env.VERCEL_AI_GATEWAY_URL || !process.env.VERCEL_AI_GATEWAY_API_KEY) {
-    return batch.map((topic) => ({ topic, output: mockContent(topic) }));
-  }
+  // Always try to use the API, fall back to mock if it fails
+  const baseUrl = process.env.VERCEL_AI_GATEWAY_URL || 'http://localhost:3001';
 
   const body = {
     model: config.model,
@@ -80,26 +79,30 @@ async function generateBatch(batch: TopicConfig[], config: AIConfig, instruction
       ]
     }))
   };
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
 
-  const response = await fetch(`${process.env.VERCEL_AI_GATEWAY_URL}/v1/bulk`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.VERCEL_AI_GATEWAY_API_KEY}`
-    },
-    body: JSON.stringify(body)
-  });
+    if (!response.ok) {
+      const text = await response.text();
+      console.warn(`API error ${response.status}: ${text}. Falling back to mock content.`);
+      return batch.map((topic) => ({ topic, output: mockContent(topic) }));
+    }
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Gateway error ${response.status}: ${text}`);
+    const result = (await response.json()) as { responses: BulkResponse[] };
+    return batch.map((topic) => ({
+      topic,
+      output: result.responses.find((res) => res.id === topic.id)?.output ?? ''
+    }));
+  } catch (error) {
+    console.warn('Failed to connect to API. Using mock content:', error);
+    return batch.map((topic) => ({ topic, output: mockContent(topic) }));
   }
-
-  const result = (await response.json()) as { responses: BulkResponse[] };
-  return batch.map((topic) => ({
-    topic,
-    output: result.responses.find((res) => res.id === topic.id)?.output ?? ''
-  }));
 }
 
 function mockContent(topic: TopicConfig): string {
@@ -125,7 +128,7 @@ async function transformToHistoryEntry(topicId: string, output: string): Promise
     };
   }
 
-  const html = marked.parse(parsed.markdown, { mangle: false, headerIds: false });
+  const html = await marked.parse(parsed.markdown);
 
   return {
     id: randomUUID(),

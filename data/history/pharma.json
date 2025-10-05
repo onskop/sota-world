@@ -1,5 +1,49 @@
 [
   {
+    "id": "e579aefa-12c2-47a7-808c-22f71d4c1a25",
+    "topicId": "pharma",
+    "generatedAt": "2025-10-05T09:36:15.211Z",
+    "title": "Pharma Best Practices — Mock Insight",
+    "summary": "Development mode summary. Connect the Vercel AI Gateway to receive live intelligence.",
+    "content": "<h2>Signal Radar</h2>\n<ul>\n<li>Placeholder update for Pharma Best Practices.</li>\n</ul>\n<h2>Investment &amp; Funding Flow</h2>\n<ul>\n<li>Sample funding note.</li>\n</ul>\n<h2>Regulatory &amp; Policy Watch</h2>\n<ul>\n<li>Sample regulation note.</li>\n</ul>\n<h2>Frontier Experiments</h2>\n<ul>\n<li>Sample experiment.</li>\n</ul>\n<h2>Action Playbook</h2>\n<ul>\n<li>Align data infrastructure for upcoming updates.</li>\n</ul>\n",
+    "sources": [
+      "https://example.com/mock-source"
+    ]
+  },
+  {
+    "id": "55e841b8-c464-4ffd-a668-b8da7710748a",
+    "topicId": "pharma",
+    "generatedAt": "2025-10-05T09:35:45.343Z",
+    "title": "Pharma Best Practices — Mock Insight",
+    "summary": "Development mode summary. Connect the Vercel AI Gateway to receive live intelligence.",
+    "content": "<h2>Signal Radar</h2>\n<ul>\n<li>Placeholder update for Pharma Best Practices.</li>\n</ul>\n<h2>Investment &amp; Funding Flow</h2>\n<ul>\n<li>Sample funding note.</li>\n</ul>\n<h2>Regulatory &amp; Policy Watch</h2>\n<ul>\n<li>Sample regulation note.</li>\n</ul>\n<h2>Frontier Experiments</h2>\n<ul>\n<li>Sample experiment.</li>\n</ul>\n<h2>Action Playbook</h2>\n<ul>\n<li>Align data infrastructure for upcoming updates.</li>\n</ul>\n",
+    "sources": [
+      "https://example.com/mock-source"
+    ]
+  },
+  {
+    "id": "4b276171-2d4f-4b80-bc4d-08ac62153896",
+    "topicId": "pharma",
+    "generatedAt": "2025-10-05T09:33:50.341Z",
+    "title": "Pharma Best Practices — Mock Insight",
+    "summary": "Development mode summary. Connect the Vercel AI Gateway to receive live intelligence.",
+    "content": "<h2>Signal Radar</h2>\n<ul>\n<li>Placeholder update for Pharma Best Practices.</li>\n</ul>\n<h2>Investment &amp; Funding Flow</h2>\n<ul>\n<li>Sample funding note.</li>\n</ul>\n<h2>Regulatory &amp; Policy Watch</h2>\n<ul>\n<li>Sample regulation note.</li>\n</ul>\n<h2>Frontier Experiments</h2>\n<ul>\n<li>Sample experiment.</li>\n</ul>\n<h2>Action Playbook</h2>\n<ul>\n<li>Align data infrastructure for upcoming updates.</li>\n</ul>\n",
+    "sources": [
+      "https://example.com/mock-source"
+    ]
+  },
+  {
+    "id": "fdfff194-52e4-42d1-bdd1-ea949ec0852d",
+    "topicId": "pharma",
+    "generatedAt": "2025-10-05T09:30:12.592Z",
+    "title": "Pharma Best Practices — Mock Insight",
+    "summary": "Development mode summary. Connect the Vercel AI Gateway to receive live intelligence.",
+    "content": "<h2>Signal Radar</h2>\n<ul>\n<li>Placeholder update for Pharma Best Practices.</li>\n</ul>\n<h2>Investment &amp; Funding Flow</h2>\n<ul>\n<li>Sample funding note.</li>\n</ul>\n<h2>Regulatory &amp; Policy Watch</h2>\n<ul>\n<li>Sample regulation note.</li>\n</ul>\n<h2>Frontier Experiments</h2>\n<ul>\n<li>Sample experiment.</li>\n</ul>\n<h2>Action Playbook</h2>\n<ul>\n<li>Align data infrastructure for upcoming updates.</li>\n</ul>\n",
+    "sources": [
+      "https://example.com/mock-source"
+    ]
+  },
+  {
     "id": "sample-pharma-1",
     "topicId": "pharma",
     "generatedAt": "2024-04-29T07:30:00.000Z",

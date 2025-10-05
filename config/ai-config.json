@@ -1,9 +1,9 @@
 {
   "provider": "vercel-ai-gateway",
-  "model": "grok-beta",
+  "model": "xai/grok-4-fast-non-reasoning",
   "bulk": {
     "enabled": true,
-    "maxBatchSize": 5
+    "maxBatchSize": 50
   },
   "topics": [
     {
