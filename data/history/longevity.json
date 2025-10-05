@@ -1,0 +1,13 @@
+[
+  {
+    "id": "sample-longevity-1",
+    "topicId": "longevity",
+    "generatedAt": "2024-05-01T06:00:00.000Z",
+    "title": "Longevity Research — Mock Insight",
+    "summary": "Development mode summary. Connect the Vercel AI Gateway to receive live intelligence.",
+    "content": "<h2>Signal Radar</h2><ul><li>Placeholder update for Longevity Research.</li></ul><h2>Investment &amp; Funding Flow</h2><ul><li>Sample funding note.</li></ul><h2>Regulatory &amp; Policy Watch</h2><ul><li>Sample regulation note.</li></ul><h2>Frontier Experiments</h2><ul><li>Sample experiment.</li></ul><h2>Action Playbook</h2><ul><li>Align data infrastructure for upcoming updates.</li></ul>",
+    "sources": [
+      "https://example.com/mock-source"
+    ]
+  }
+]

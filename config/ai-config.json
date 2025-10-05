@@ -1,0 +1,38 @@
+{
+  "provider": "vercel-ai-gateway",
+  "model": "grok-beta",
+  "bulk": {
+    "enabled": true,
+    "maxBatchSize": 5
+  },
+  "topics": [
+    {
+      "id": "longevity",
+      "title": "Longevity Research",
+      "prompt": "Provide a deeply sourced, state-of-the-art report on longevity research including rejuvenation biotech, biomarkers, regulatory updates, and funding movements.",
+      "summaryPrompt": "Summarize the most actionable breakthroughs in longevity for executives.",
+      "scheduleId": "daily-brief"
+    },
+    {
+      "id": "ai-frontier",
+      "title": "AI State of the Art",
+      "prompt": "Curate the most recent AI research, product launches, compute economics, regulatory changes, and frontier capability milestones.",
+      "summaryPrompt": "Highlight AI shifts that demand strategic responses.",
+      "scheduleId": "daily-brief"
+    },
+    {
+      "id": "pharma",
+      "title": "Pharma Best Practices",
+      "prompt": "Outline cutting-edge pharmaceutical manufacturing practices, automation, quality control, and compliance updates across major regions.",
+      "summaryPrompt": "List the process optimizations pharma leaders must know now.",
+      "scheduleId": "weekly-review"
+    },
+    {
+      "id": "automation",
+      "title": "Automation & Robotics",
+      "prompt": "Report on the newest industrial automation deployments, robotics innovations, ROI case studies, and supply chain resilience techniques.",
+      "summaryPrompt": "Surface the most investable automation opportunities.",
+      "scheduleId": "weekly-review"
+    }
+  ]
+}
