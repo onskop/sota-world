@@ -4,7 +4,7 @@ Next.js application that publishes daily AI-generated briefings on the state of 
 
 ## Features
 - **AI content automation** powered by Vercel AI Gateway with configurable model and prompts per topic.
-- **Bulk generation** batching to minimize gateway spend.
+- **Direct Vercel AI Gateway integration** issuing per-topic completions with configurable models.
 - **Flexible scheduling** (daily/weekly/monthly) via Node Cron, defined through editable JSON config.
 - **Historical archives** persisted to local JSON files for easy versioning.
 - **Modern UI** with tabbed navigation, glassmorphism styling, and extensive Google Ad placements.

@@ -9,16 +9,7 @@ import { getInstructions, saveHistory } from '@/lib/data';
 interface AIConfig {
   provider: string;
   model: string;
-  bulk: {
-    enabled: boolean;
-    maxBatchSize: number;
-  };
   topics: TopicConfig[];
-}
-
-interface BulkResponse {
-  id: string;
-  output: string;
 }
 
 const ROOT = process.cwd();
@@ -39,69 +30,75 @@ export async function runUpdate(specificTopics?: TopicConfig[]) {
     return;
   }
 
-  if (!process.env.VERCEL_AI_GATEWAY_URL) {
+  const baseUrl = process.env.VERCEL_AI_GATEWAY_URL;
+  if (!baseUrl) {
     console.warn('VERCEL_AI_GATEWAY_URL is not defined. Content generation will run in dry-run mode.');
   }
 
-  const batchSize = config.bulk?.maxBatchSize || topics.length;
-  const batches = chunk(topics, batchSize);
+  for (const topic of topics) {
+    const output = await generateForTopic(topic, config, instructions, baseUrl);
+    if (!output) continue;
 
-  for (const batch of batches) {
-    const responses = await generateBatch(batch, config, instructions);
-    for (const { topic, output } of responses) {
-      if (!output) continue;
-      const entry = await transformToHistoryEntry(topic.id, output);
-      await saveHistory(topic.id, entry);
-      console.log(`Saved update for ${topic.title}`);
-    }
+    const entry = await transformToHistoryEntry(topic.id, output);
+    await saveHistory(topic.id, entry);
+    console.log(`Saved update for ${topic.title}`);
   }
 }
 
-async function generateBatch(batch: TopicConfig[], config: AIConfig, instructions: string) {
-  // Always try to use the API, fall back to mock if it fails
-  const baseUrl = process.env.VERCEL_AI_GATEWAY_URL || 'http://localhost:3001';
+async function generateForTopic(topic: TopicConfig, config: AIConfig, instructions: string, baseUrl?: string) {
+  if (!baseUrl) {
+    return mockContent(topic);
+  }
 
   const body = {
     model: config.model,
-    requests: batch.map((topic) => ({
-      id: topic.id,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an elite research analyst generating executive-ready intelligence. Respond strictly in JSON with keys title, summary, markdown, sources (array of URLs).' +
-            ' Use html-safe markdown and adhere to provided instructions.'
-        },
-        {
-          role: 'user',
-          content: `${instructions}\n\nTOPIC_PROMPT: ${topic.prompt}\n\nProvide a fresh report.`
-        }
-      ]
-    }))
-  };
-  try {
-    const response = await fetch(`${baseUrl}/api/v1/bulk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You are an elite research analyst generating executive-ready intelligence. Respond strictly in JSON with keys title, summary, markdown, sources (array of URLs).' +
+          ' Use html-safe markdown and adhere to provided instructions.'
       },
+      {
+        role: 'user',
+        content: `${instructions}\n\nTOPIC_PROMPT: ${topic.prompt}\n\nProvide a fresh report.`
+      }
+    ]
+  };
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+
+  if (process.env.VERCEL_AI_GATEWAY_API_KEY) {
+    headers.Authorization = `Bearer ${process.env.VERCEL_AI_GATEWAY_API_KEY}`;
+  }
+
+  try {
+    const response = await fetch(baseUrl, {
+      method: 'POST',
+      headers,
       body: JSON.stringify(body)
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.warn(`API error ${response.status}: ${text}. Falling back to mock content.`);
-      return batch.map((topic) => ({ topic, output: mockContent(topic) }));
+      console.warn(`API error ${response.status}: ${text}. Falling back to mock content for ${topic.title}.`);
+      return mockContent(topic);
     }
 
-    const result = (await response.json()) as { responses: BulkResponse[] };
-    return batch.map((topic) => ({
-      topic,
-      output: result.responses.find((res) => res.id === topic.id)?.output ?? ''
-    }));
+    const result = await response.json();
+    const output = extractContent(result);
+
+    if (!output) {
+      console.warn('Received empty response from API. Falling back to mock content.');
+      return mockContent(topic);
+    }
+
+    return output;
   } catch (error) {
-    console.warn('Failed to connect to API. Using mock content:', error);
-    return batch.map((topic) => ({ topic, output: mockContent(topic) }));
+    console.warn(`Failed to connect to API for ${topic.title}. Using mock content:`, error);
+    return mockContent(topic);
   }
 }
 
@@ -141,13 +138,67 @@ async function transformToHistoryEntry(topicId: string, output: string): Promise
   };
 }
 
-function chunk<T>(arr: T[], size: number): T[][] {
-  if (!size || size <= 0) return [arr];
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
+function extractContent(result: unknown): string {
+  if (typeof result === 'string') {
+    return result;
   }
-  return result;
+
+  if (!result || typeof result !== 'object') {
+    return '';
+  }
+
+  const data = result as Record<string, unknown>;
+
+  if (typeof data.output === 'string') {
+    return data.output;
+  }
+
+  if (typeof data.response === 'string') {
+    return data.response;
+  }
+
+  if (Array.isArray(data.outputs)) {
+    const outputs = data.outputs
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (item && typeof item === 'object' && 'content' in item && typeof (item as { content?: string }).content === 'string') {
+          return (item as { content?: string }).content ?? '';
+        }
+        return '';
+      })
+      .filter(Boolean);
+    if (outputs.length) {
+      return outputs.join('\n');
+    }
+  }
+
+  if (Array.isArray(data.choices)) {
+    const choices = data.choices as Array<{ message?: { content?: string }; text?: string } | null | undefined>;
+    for (const choice of choices) {
+      if (!choice) continue;
+      if (typeof choice.text === 'string' && choice.text.trim()) {
+        return choice.text;
+      }
+      const content = choice.message?.content;
+      if (typeof content === 'string' && content.trim()) {
+        return content;
+      }
+    }
+  }
+
+  if (Array.isArray(data.data)) {
+    const items = data.data as Array<{ content?: Array<{ text?: string }> }>;
+    for (const item of items) {
+      if (!item?.content) continue;
+      for (const block of item.content) {
+        if (block?.text && block.text.trim()) {
+          return block.text;
+        }
+      }
+    }
+  }
+
+  return '';
 }
 
 if (require.main === module) {

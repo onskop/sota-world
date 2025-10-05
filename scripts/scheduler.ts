@@ -12,7 +12,6 @@ interface ScheduleFile {
 interface AIConfig {
   provider: string;
   model: string;
-  bulk: { enabled: boolean; maxBatchSize: number };
   topics: TopicConfig[];
 }
 
