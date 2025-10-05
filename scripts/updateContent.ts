@@ -1,3 +1,14 @@
+/**
+ * updateContent script for Vercel AI Gateway
+ * 
+ * Features:
+ * - Auto-corrects Vercel AI Gateway URLs
+ * - OpenAI-compatible request format
+ * - Comprehensive error handling
+ * 
+ * Run with: npx tsx scripts/updateContent.ts
+ */
+
 import 'dotenv/config';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -20,6 +31,33 @@ async function loadConfig(): Promise<AIConfig> {
   return JSON.parse(raw) as AIConfig;
 }
 
+async function validateVercelAIGateway(baseUrl: string): Promise<boolean> {
+  try {
+    const testBody = {
+      model: 'test',
+      messages: [{ role: 'user', content: 'test' }]
+    };
+    
+    const testResponse = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.VERCEL_AI_GATEWAY_API_KEY && {
+          'Authorization': `Bearer ${process.env.VERCEL_AI_GATEWAY_API_KEY}`
+        })
+      },
+      body: JSON.stringify(testBody)
+    });
+    
+    return testResponse.ok;
+  } catch (error) {
+    console.error(`Failed to validate Vercel AI Gateway:`, error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+
+
 export async function runUpdate(specificTopics?: TopicConfig[]) {
   const config = await loadConfig();
   const instructions = await getInstructions();
@@ -33,11 +71,31 @@ export async function runUpdate(specificTopics?: TopicConfig[]) {
   const baseUrl = process.env.VERCEL_AI_GATEWAY_URL;
   if (!baseUrl) {
     console.warn('VERCEL_AI_GATEWAY_URL is not defined. Content generation will run in dry-run mode.');
+  } else {
+    // Ensure the URL ends with the correct chat completions endpoint
+    let chatCompletionsUrl = baseUrl;
+    if (!baseUrl.endsWith('/v1/chat/completions')) {
+      if (baseUrl.endsWith('/v1')) {
+        chatCompletionsUrl = `${baseUrl}/chat/completions`;
+      } else if (baseUrl.endsWith('/v1/')) {
+        chatCompletionsUrl = `${baseUrl}chat/completions`;
+      } else {
+        chatCompletionsUrl = `${baseUrl}/v1/chat/completions`;
+      }
+      console.log(`Corrected URL to: ${chatCompletionsUrl}`);
+    }
+    
+    // Update the baseUrl for use in generateForTopic
+    process.env.VERCEL_AI_GATEWAY_URL = chatCompletionsUrl;
   }
 
   for (const topic of topics) {
-    const output = await generateForTopic(topic, config, instructions, baseUrl);
-    if (!output) continue;
+    console.log(`Processing topic: ${topic.title}`);
+    const output = await generateForTopic(topic, config, instructions, process.env.VERCEL_AI_GATEWAY_URL);
+    if (!output) {
+      console.warn(`No output generated for ${topic.title}`);
+      continue;
+    }
 
     const entry = await transformToHistoryEntry(topic.id, output);
     await saveHistory(topic.id, entry);
@@ -47,6 +105,7 @@ export async function runUpdate(specificTopics?: TopicConfig[]) {
 
 async function generateForTopic(topic: TopicConfig, config: AIConfig, instructions: string, baseUrl?: string) {
   if (!baseUrl) {
+    console.log(`No baseUrl provided for ${topic.title}, using mock content`);
     return mockContent(topic);
   }
 
@@ -63,7 +122,10 @@ async function generateForTopic(topic: TopicConfig, config: AIConfig, instructio
         role: 'user',
         content: `${instructions}\n\nTOPIC_PROMPT: ${topic.prompt}\n\nProvide a fresh report.`
       }
-    ]
+    ],
+    stream: false,
+    temperature: 0.7,
+    max_tokens: 4000
   };
 
   const headers: Record<string, string> = {
@@ -97,7 +159,7 @@ async function generateForTopic(topic: TopicConfig, config: AIConfig, instructio
 
     return output;
   } catch (error) {
-    console.warn(`Failed to connect to API for ${topic.title}. Using mock content:`, error);
+    console.warn(`Failed to connect to API for ${topic.title}. Using mock content:`, error instanceof Error ? error.message : String(error));
     return mockContent(topic);
   }
 }
