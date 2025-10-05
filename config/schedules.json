@@ -1,0 +1,24 @@
+{
+  "schedules": [
+    {
+      "id": "daily-brief",
+      "frequency": "daily",
+      "time": "06:00",
+      "timezone": "UTC"
+    },
+    {
+      "id": "weekly-review",
+      "frequency": "weekly",
+      "time": "07:30",
+      "dayOfWeek": 1,
+      "timezone": "UTC"
+    },
+    {
+      "id": "monthly-outlook",
+      "frequency": "monthly",
+      "time": "09:00",
+      "dayOfMonth": 1,
+      "timezone": "UTC"
+    }
+  ]
+}
