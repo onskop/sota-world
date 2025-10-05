@@ -5,7 +5,7 @@
     {
       "id": "longevity",
       "title": "Longevity Research",
-      "prompt": "Provide a deeply sourced, state-of-the-art report on longevity research including rejuvenation biotech, biomarkers, regulatory updates, and funding movements.",
+      "prompt": "Deliver an executive-ready longevity intelligence brief emphasizing current trials, breakthrough timelines, funding flows, and domain-level progress. Populate the structured data contract (kpis, timeline, fundingSeries, chart notes) alongside the narrative so the page can render KPI strips, milestone timelines, and funding graphics. Explicitly cover senolytics, epigenetic reprogramming, stem cell therapies, metabolic interventions, AI-driven discovery, and biomarker platforms with quantified progress notes.",
       "summaryPrompt": "Summarize the most actionable breakthroughs in longevity for executives.",
       "scheduleId": "daily-brief"
     },
