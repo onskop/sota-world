@@ -1,10 +1,6 @@
 {
   "provider": "vercel-ai-gateway",
   "model": "xai/grok-4-fast-non-reasoning",
-  "bulk": {
-    "enabled": true,
-    "maxBatchSize": 50
-  },
   "topics": [
     {
       "id": "longevity",
