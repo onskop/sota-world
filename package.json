@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "update:content": "tsx scripts/updateContent.ts"
+    "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.18",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.91.1",
+    "ai": "^6.0.49",
     "date-fns": "3.6.0",
     "dotenv": "16.4.5",
     "gray-matter": "4.0.3",
@@ -17,7 +20,9 @@
     "next": "14.2.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "swr": "2.2.5"
+    "swr": "2.2.5",
+    "zod": "^4.3.6",
+    "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@types/node": "20.12.7",
