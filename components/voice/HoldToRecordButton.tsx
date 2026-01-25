@@ -198,8 +198,11 @@ export function HoldToRecordButton({
             onPointerCancel={handlePointerCancel}
             className="px-12 py-6 md:px-16 md:py-8 bg-electric text-midnight font-medium rounded-lg
                        hover:bg-electric/90 active:bg-electric/80 transition-colors
-                       text-xl md:text-2xl font-display touch-none select-none"
+                       text-xl md:text-2xl font-display touch-none select-none flex items-center gap-3"
           >
+            <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
             Hold to Record
           </button>
         ) : (
@@ -209,8 +212,11 @@ export function HoldToRecordButton({
             onPointerCancel={handlePointerCancel}
             className="px-12 py-6 md:px-16 md:py-8 bg-sunrise text-white font-medium rounded-lg
                        hover:bg-sunrise/90 active:bg-sunrise/80 transition-colors
-                       text-xl md:text-2xl font-display touch-none select-none"
+                       text-xl md:text-2xl font-display touch-none select-none flex items-center gap-3"
           >
+            <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
             {mode === 'tap-recording' ? 'Tap to Stop' : 'Release to Stop'}
           </button>
         )}

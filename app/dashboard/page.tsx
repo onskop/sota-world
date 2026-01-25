@@ -29,7 +29,7 @@ export default async function DashboardPage() {
           title="Voice Command"
           description="Record and transcribe voice"
           icon="mic"
-          href="/dashboard/voice-command"
+          href="/"
         />
         <QuickActionCard
           title="Browse Notes"

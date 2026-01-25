@@ -29,6 +29,100 @@ export interface Profile {
   updated_at: string // timestamptz
 }
 
+// Router agent settings (stored in profiles.preferences.router)
+export type RouterModelType =
+  | 'gpt-4o-mini'
+  | 'gpt-4o'
+  | 'gpt-4-turbo'
+  | 'anthropic/claude-haiku-4.5'
+  | 'google/gemini-3-flash'
+  | 'openai/gpt-5.1-instant'
+  | 'openai/gpt-5-nano'
+  | 'xai/grok-4.1-fast-non-reasoning'
+
+export interface RouterToolConfig {
+  description: string
+  enabled: boolean
+}
+
+export interface RouterSettings {
+  model: RouterModelType
+  tools: {
+    add_to_list: RouterToolConfig
+    create_task: RouterToolConfig
+    save_to_inbox: RouterToolConfig
+  }
+}
+
+// Default router settings
+export const DEFAULT_ROUTER_SETTINGS: RouterSettings = {
+  model: 'gpt-4o-mini',
+  tools: {
+    add_to_list: {
+      description: 'Add one or more items to an existing list. Use when user mentions a list name that exists.',
+      enabled: true,
+    },
+    create_task: {
+      description: 'Create a task with optional deadline. Use when user mentions a todo, reminder, or action item.',
+      enabled: true,
+    },
+    save_to_inbox: {
+      description: 'Save content to the Inbox list (default catch-all). Use for general notes, ideas, or when no other tool matches.',
+      enabled: true,
+    },
+  },
+}
+
+// User personal settings (stored in profiles.preferences.personal)
+export type VoiceLanguage =
+  | 'auto' // Auto-detect
+  | 'en'   // English
+  | 'es'   // Spanish
+  | 'fr'   // French
+  | 'de'   // German
+  | 'it'   // Italian
+  | 'pt'   // Portuguese
+  | 'nl'   // Dutch
+  | 'pl'   // Polish
+  | 'ru'   // Russian
+  | 'ja'   // Japanese
+  | 'ko'   // Korean
+  | 'zh'   // Chinese
+  | 'ar'   // Arabic
+  | 'hi'   // Hindi
+  | 'uk'   // Ukrainian
+  | 'cs'   // Czech
+  | 'sk'   // Slovak
+
+export interface UserSettings {
+  voiceLanguage: VoiceLanguage
+}
+
+export const DEFAULT_USER_SETTINGS: UserSettings = {
+  voiceLanguage: 'auto',
+}
+
+export const VOICE_LANGUAGE_OPTIONS: { value: VoiceLanguage; label: string }[] = [
+  { value: 'auto', label: 'Auto-detect' },
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'it', label: 'Italian' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'nl', label: 'Dutch' },
+  { value: 'pl', label: 'Polish' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'uk', label: 'Ukrainian' },
+  { value: 'cs', label: 'Czech' },
+  { value: 'sk', label: 'Slovak' },
+]
+
 export interface SubscriptionTier {
   id: string // UUID
   name: 'free' | 'pro' | 'unlimited'
@@ -94,6 +188,26 @@ export interface List {
   updated_at: string
 }
 
+// Proposal types for inbox items
+export type ProposalStatus = 'pending' | 'accepted' | 'rejected'
+
+export interface ItemProposal {
+  target_list_id: string
+  target_list_name: string
+  reformulated_content: string
+  original_content: string
+  proposed_at: string
+  status: ProposalStatus
+}
+
+export interface ListItemMetadata {
+  source_type?: 'text' | 'voice' | 'agent_action'
+  voice_recording_id?: string
+  migrated_from_note_id?: string
+  proposal?: ItemProposal
+  [key: string]: any
+}
+
 export interface ListItem {
   id: string // UUID
   list_id: string // FK to lists
@@ -101,12 +215,7 @@ export interface ListItem {
   content: string
   is_checked: boolean
   position: number
-  metadata: {
-    source_type?: 'text' | 'voice' | 'agent_action'
-    voice_recording_id?: string
-    migrated_from_note_id?: string
-    [key: string]: any
-  }
+  metadata: ListItemMetadata
   created_at: string
   updated_at: string
 }
