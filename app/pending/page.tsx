@@ -21,7 +21,7 @@ export default async function PendingApprovalPage() {
     .single()
 
   if (profile?.is_admin || profile?.account_status === 'approved') {
-    redirect('/dashboard')
+    redirect('/')
   }
 
   return <PendingContent userEmail={user.email || ''} />

@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { List } from '@/lib/supabase/types'
-import { DashboardHeader } from '@/components/dashboard/Header'
 import { ListManager } from '@/components/settings/ListManager'
 import { RouterSettings } from '@/components/settings/RouterSettings'
 import { PersonalSettings } from '@/components/settings/PersonalSettings'
@@ -37,14 +36,12 @@ export function SettingsClient({ user, initialLists }: SettingsClientProps) {
   }, [])
 
   return (
-    <main className="min-h-screen">
-      <DashboardHeader user={user} />
-
+    <div className="space-y-6">
       {/* Back link and title */}
       <div className="border-b border-white/5 bg-midnight/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link
-            href="/dashboard/voice-command"
+            href="/"
             className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,6 +137,6 @@ export function SettingsClient({ user, initialLists }: SettingsClientProps) {
           )}
         </div>
       </div>
-    </main>
+    </div>
   )
 }

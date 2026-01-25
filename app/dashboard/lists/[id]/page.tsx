@@ -27,7 +27,7 @@ export default async function ListDetailPage({ params }: PageProps) {
     .single()
 
   if (!list) {
-    redirect('/dashboard/voice-command')
+    redirect('/')
   }
 
   return <ListDetailClient user={user} list={list} />
