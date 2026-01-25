@@ -51,7 +51,12 @@ export function HoldToRecordButton({
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
         const recordingDuration = Math.floor((Date.now() - startTimeRef.current) / 1000)
-        onRecordingComplete(audioBlob, recordingDuration)
+
+        // Clear timer
+        if (timerRef.current) {
+          clearInterval(timerRef.current)
+          timerRef.current = null
+        }
 
         // Stop all tracks
         if (streamRef.current) {
@@ -61,6 +66,9 @@ export function HoldToRecordButton({
 
         setMode('idle')
         setDuration(0)
+
+        // Call callback after state cleanup
+        onRecordingComplete(audioBlob, recordingDuration)
       }
 
       mediaRecorder.start()
@@ -84,31 +92,42 @@ export function HoldToRecordButton({
   }, [onRecordingComplete])
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop()
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
 
       // Haptic feedback
       if ('vibrate' in navigator) {
         navigator.vibrate(30)
       }
     }
-  }, [isRecording])
+  }, [])
 
   const handlePointerDown = useCallback(() => {
     if (!isActive) return
 
+    // If already in tap-recording mode, don't start new recording
+    // Just mark this as a tap to stop (handled in pointerUp)
+    if (mode === 'tap-recording') {
+      pointerDownTimeRef.current = Date.now()
+      return
+    }
+
+    // Start new recording
     pointerDownTimeRef.current = Date.now()
     setMode('hold-recording')
     startRecording()
-  }, [isActive, startRecording])
+  }, [isActive, mode, startRecording])
 
   const handlePointerUp = useCallback(() => {
     if (!isActive) return
 
     const pressDuration = Date.now() - pointerDownTimeRef.current
+
+    // If we're in tap-recording mode, stop recording
+    if (mode === 'tap-recording') {
+      stopRecording()
+      return
+    }
 
     // If press was < 300ms and we're in hold-recording mode, switch to tap-recording
     if (pressDuration < 300 && mode === 'hold-recording') {
@@ -116,13 +135,7 @@ export function HoldToRecordButton({
       return // Keep recording
     }
 
-    // If we're in tap-recording mode, this is a second tap to stop
-    if (mode === 'tap-recording') {
-      stopRecording()
-      return
-    }
-
-    // Otherwise, stop recording (hold release)
+    // Otherwise, stop recording (hold release after > 300ms)
     if (mode === 'hold-recording') {
       stopRecording()
     }
@@ -146,67 +159,83 @@ export function HoldToRecordButton({
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const buttonSize = isActive
-    ? 'w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32'
-    : 'w-16 h-16'
+  // Render completed (small) button
+  if (isCompleted && !isActive) {
+    return (
+      <div className="flex items-center gap-4">
+        <button
+          onClick={handleClick}
+          className="px-4 py-2 bg-slate-700 text-slate-300 font-medium rounded-lg
+                     hover:bg-slate-600 transition-colors text-sm"
+        >
+          Re-record
+        </button>
+        <div className="flex items-center gap-2 text-slate-400 text-sm">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+          </svg>
+          <span>Recording complete</span>
+        </div>
+      </div>
+    )
+  }
 
-  const iconSize = isActive ? 'w-12 h-12' : 'w-8 h-8'
-
+  // Render active (large) button
   return (
-    <div className="flex flex-col items-center gap-4">
-      {error && isActive && (
+    <div className="flex flex-col items-center gap-6">
+      {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm max-w-md text-center">
           {error}
         </div>
       )}
 
-      <button
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerCancel}
-        onClick={handleClick}
-        disabled={!isActive && !isCompleted}
-        className={`
-          ${buttonSize}
-          rounded-full
-          flex items-center justify-center
-          transition-all duration-300 ease-in-out
-          ${isActive ? 'bg-electric hover:bg-electric/90 active:bg-electric/80' : 'bg-electric/50'}
-          ${isRecording ? 'ring-4 ring-red-500/50 animate-pulse' : ''}
-          ${isCompleted ? 'cursor-pointer hover:scale-105' : ''}
-          disabled:opacity-30 disabled:cursor-not-allowed
-          touch-none select-none
-        `}
-        aria-label={isRecording ? 'Recording... Release to stop' : 'Hold to record'}
-      >
-        {isRecording ? (
-          <div className={`${iconSize} bg-red-500 rounded-full`} />
-        ) : (
-          <svg
-            className={`${iconSize} text-midnight`}
-            fill="currentColor"
-            viewBox="0 0 24 24"
+      <div className="flex flex-col items-center gap-4">
+        {!isRecording ? (
+          <button
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            className="px-12 py-6 md:px-16 md:py-8 bg-electric text-midnight font-medium rounded-lg
+                       hover:bg-electric/90 active:bg-electric/80 transition-colors
+                       text-xl md:text-2xl font-display touch-none select-none"
           >
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-          </svg>
+            Hold to Record
+          </button>
+        ) : (
+          <button
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            className="px-12 py-6 md:px-16 md:py-8 bg-sunrise text-white font-medium rounded-lg
+                       hover:bg-sunrise/90 active:bg-sunrise/80 transition-colors
+                       text-xl md:text-2xl font-display touch-none select-none"
+          >
+            {mode === 'tap-recording' ? 'Tap to Stop' : 'Release to Stop'}
+          </button>
         )}
-      </button>
 
-      {isRecording && isActive && (
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-white font-mono text-2xl md:text-3xl font-bold">
-            {formatDuration(duration)}
-          </span>
-          <p className="text-slate-300 text-sm md:text-base text-center max-w-xs">
-            {mode === 'hold-recording' ? 'Release to stop' : 'Tap again to stop'}
+        {isRecording && (
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-slate-300 font-mono text-2xl md:text-3xl">
+              {formatDuration(duration)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {isRecording && (
+        <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg max-w-md">
+          <p className="text-slate-300 text-sm md:text-base text-center">
+            Recording in progress... Speak clearly into your microphone.
           </p>
         </div>
       )}
 
-      {!isRecording && isActive && (
-        <p className="text-slate-300 text-sm md:text-base text-center max-w-xs">
-          Hold to record or tap to start/stop
+      {!isRecording && (
+        <p className="text-slate-400 text-sm text-center">
+          Hold button to record, or tap once to start and tap again to stop
         </p>
       )}
     </div>
